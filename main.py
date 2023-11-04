@@ -94,7 +94,7 @@ reddit = praw.Reddit(username=REDDIT_USERNAME,
 submission_base36 = STARTING_CHAPTER_BASE36
 result = get_submission(reddit, submission_base36)
 book = create_epub()
-chapters = ["nav"]
+chapters = []
 
 for i in range(NUMBER_OF_CHAPTERS_TO_SCAN):
     submission = get_submission(reddit, submission_base36)
@@ -106,5 +106,6 @@ for i in range(NUMBER_OF_CHAPTERS_TO_SCAN):
     chapters.append(chapter)
     book.add_item(chapter)
 
-book.spine = chapters
+book.toc = chapters
+book.spine = ["nav"] + chapters
 epub.write_epub(FILENAME, book, {})  # https://www.amazon.com/gp/sendtokindle
