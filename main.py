@@ -4,7 +4,7 @@ import praw
 from ebooklib import epub
 
 # BOOK PROPERTIES
-TITLE = "Behold: Humanity - reddit version ch 461"
+TITLE = "Behold: Humanity - reddit ch 461-561"
 AUTHOR = "Ralts Bloodthorne"
 LANGUAGE = "en"
 IDENTIFIER = "test01"
@@ -12,7 +12,8 @@ FILENAME = "test.epub"
 
 # SCAN PROPERTIES
 STARTING_CHAPTER_BASE36 = "mizhcb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/mizhcb/first_contact_fourth_wave_chapter_461/
-NUMBER_OF_CHAPTERS_TO_SCAN = 7
+NUMBER_OF_CHAPTERS_TO_SCAN = 100
+MISSING_LINKS = ["mpr25p", "oc2mxr"]  # when author forgot to add "next" link, add the BASE36 of the next chapter here. Order matters
 
 # APP PROPERTIES - SEE https://medium.com/geekculture/how-to-extract-reddit-posts-for-an-nlp-project-56d121b260b4
 REDDIT_USERNAME = ""
@@ -64,48 +65,63 @@ def convert_content_to_xhtml(content):
     return "".join(converted_paragraphs)
 
 
-def get_submission(reddit, base36):
+def get_submission(reddit, base36, missing_link_count):
     submission = reddit.submission(base36)
 
     title = submission.title
     selftext = submission.selftext
-    link = re.search("next].*\/\)", selftext).group(0)[6:-1]
-    next_base36 = re.search("comments\/.{6}", link).group(0)[9:]
+    print(title + " -- " + base36)
+
+    matched = re.search("next].*\/\)", selftext)
+    if matched is not None:
+        link = matched.group(0)[6:-1]
+        next_base36 = re.search("comments\/.{6}", link).group(0)[9:]
+    else:
+        print("### MISSING NEXT CHAPTER LINK IN " + base36)
+        next_base36 = MISSING_LINKS[missing_link_count]
+        print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
+        missing_link_count = missing_link_count + 1
+
 
     first_line_index = selftext.find('\n')
     last_line_index = selftext.rfind('\n')
     content = selftext[first_line_index + 2:last_line_index]
 
-    return {"title": title, "content": content, "next_base36": next_base36}
+    return {"title": title, "content": content, "next_base36": next_base36, "missing_link_count": missing_link_count}
 
 
-#
-# MAIN SCRIPT
-#
+def main():
+    reddit = praw.Reddit(username=REDDIT_USERNAME,
+                         password=REDDIT_PASSWORD,
+                         client_id=APP_CLIENT_ID,
+                         client_secret=APP_SECRET,
+                         user_agent="praw_scraper_1.0"
+                         )
 
+    submission_base36 = STARTING_CHAPTER_BASE36
+    missing_link_count = 0
+    book = create_epub()
+    chapters = []
 
-reddit = praw.Reddit(username=REDDIT_USERNAME,
-                     password=REDDIT_PASSWORD,
-                     client_id=APP_CLIENT_ID,
-                     client_secret=APP_SECRET,
-                     user_agent="praw_scraper_1.0"
-                     )
+    print("### START SCAN")
 
-submission_base36 = STARTING_CHAPTER_BASE36
-result = get_submission(reddit, submission_base36)
-book = create_epub()
-chapters = []
+    # MAIN SCAN LOOP
+    for i in range(1, NUMBER_OF_CHAPTERS_TO_SCAN + 1):
+        submission = get_submission(reddit, submission_base36, missing_link_count)
 
-for i in range(NUMBER_OF_CHAPTERS_TO_SCAN):
-    submission = get_submission(reddit, submission_base36)
-    submission_base36 = submission["next_base36"]
+        submission_base36 = submission["next_base36"]
+        missing_link_count = submission["missing_link_count"]
 
-    print("Title: " + submission["title"])
+        chapter = create_chapter(i, submission["title"], submission["content"])
+        chapters.append(chapter)
+        book.add_item(chapter)
 
-    chapter = create_chapter(i, submission["title"], submission["content"])
-    chapters.append(chapter)
-    book.add_item(chapter)
+    print("### SCAN FINISHED")
 
-book.toc = chapters
-book.spine = ["nav"] + chapters
-epub.write_epub(FILENAME, book, {})  # https://www.amazon.com/gp/sendtokindle
+    print("### CREATING FILE")
+    book.toc = chapters
+    book.spine = ["nav"] + chapters
+    epub.write_epub(FILENAME, book, {})  # https://www.amazon.com/gp/sendtokindle
+    print("### FILE " + FILENAME + " CREATED")
+
+main()
