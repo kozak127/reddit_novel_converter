@@ -13,13 +13,19 @@ FILENAME = "test.epub"
 # SCAN PROPERTIES
 STARTING_CHAPTER_BASE36 = "mizhcb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/mizhcb/first_contact_fourth_wave_chapter_461/
 NUMBER_OF_CHAPTERS_TO_SCAN = 100
-MISSING_LINKS = ["mpr25p", "oc2mxr"]  # when author forgot to add "next" link, add the BASE36 of the next chapter here. Order matters
+MISSING_LINKS = ["mpr25p", # Example values, remove before use. Used when author forgot to add "next" link. Add the BASE36 of the next chapter here. Order matters
+                 "oc2mxr",
+                 "ocnsg5"]
 
 # APP PROPERTIES - SEE https://medium.com/geekculture/how-to-extract-reddit-posts-for-an-nlp-project-56d121b260b4
 REDDIT_USERNAME = ""
 REDDIT_PASSWORD = ""
 APP_CLIENT_ID = ""
 APP_SECRET = ""
+
+################################
+# DO NOT TOUCH THE STUFF BELOW #
+################################
 
 
 def create_epub():
@@ -77,11 +83,14 @@ def get_submission(reddit, base36, missing_link_count):
         link = matched.group(0)[6:-1]
         next_base36 = re.search("comments\/.{6}", link).group(0)[9:]
     else:
-        print("### MISSING NEXT CHAPTER LINK IN " + base36)
-        next_base36 = MISSING_LINKS[missing_link_count]
-        print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
-        missing_link_count = missing_link_count + 1
-
+        try:
+            print("### MISSING NEXT CHAPTER LINK IN " + base36)
+            next_base36 = MISSING_LINKS[missing_link_count]
+            print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
+            missing_link_count = missing_link_count + 1
+        except IndexError:
+            print("### ADD MISSING BASE36 AT THE END OF THE TABLE")
+            raise ValueError("Missing substitute BASE36 at the end of the MISSING_LINKS list")
 
     first_line_index = selftext.find('\n')
     last_line_index = selftext.rfind('\n')
@@ -123,5 +132,6 @@ def main():
     book.spine = ["nav"] + chapters
     epub.write_epub(FILENAME, book, {})  # https://www.amazon.com/gp/sendtokindle
     print("### FILE " + FILENAME + " CREATED")
+
 
 main()
