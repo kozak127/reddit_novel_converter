@@ -78,10 +78,11 @@ def get_submission(reddit, base36, missing_link_count):
     selftext = submission.selftext
     print(title + " -- " + base36)
 
-    matched = re.search("next].*\/\)", selftext)
+    matched = re.search("next.*\/\)", selftext, re.IGNORECASE)
     if matched is not None:
         link = matched.group(0)[6:-1]
-        next_base36 = re.search("comments\/.{6}", link).group(0)[9:]
+        next_base36 = re.search("comments\/.{7}", link).group(0)[9:]  # {6} for old reddit posts. {7} for new ones
+        next_base36 = next_base36.strip("/")  # if old reddit post, remove trailing "/"
     else:
         try:
             print("### MISSING NEXT CHAPTER LINK IN " + base36)
