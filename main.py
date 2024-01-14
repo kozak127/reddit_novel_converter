@@ -8,7 +8,7 @@ TITLE = "Behold: Humanity - reddit ch 461-561"
 AUTHOR = "Ralts Bloodthorne"
 LANGUAGE = "en"
 IDENTIFIER = "test01"
-FILENAME = "test.epub"
+FILENAME = "test.epub"  # https://www.amazon.com/gp/sendtokindle
 
 # SCAN PROPERTIES
 STARTING_CHAPTER_BASE36 = "mizhcb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/mizhcb/first_contact_fourth_wave_chapter_461/
@@ -85,7 +85,7 @@ def get_submission(reddit, base36, missing_link_count):
         next_base36 = next_base36.strip("/")  # if old reddit post, remove trailing "/"
     else:
         try:
-            print("### MISSING NEXT CHAPTER LINK IN " + base36)
+            print("### MISSING NEXT CHAPTER LINK IN " + submission.title + " -- " + base36)
             next_base36 = MISSING_LINKS[missing_link_count]
             print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
             missing_link_count = missing_link_count + 1
