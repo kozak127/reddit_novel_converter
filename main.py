@@ -71,21 +71,30 @@ def convert_content_to_xhtml(content):
     return "".join(converted_paragraphs)
 
 
-def get_submission(reddit, base36, missing_link_count):
+def get_submission(reddit, base36):
     submission = reddit.submission(base36)
 
     title = submission.title
-    selftext = submission.selftext
+    raw = submission.selftext
     print(title + " -- " + base36)
 
-    matched = re.search("next.*\/\)", selftext, re.IGNORECASE)
+    first_line_index = raw.find('\n')
+    last_line_index = raw.rfind('\n')
+    content = raw[first_line_index + 2:last_line_index]
+
+    return {"base36": base36, "title": title, "content": content, "raw": raw}
+
+
+def get_next_submission_pointer(submission, missing_link_count):
+    raw_submission = submission["raw"]
+    matched = re.search("next.*\/\)", raw_submission, re.IGNORECASE)
     if matched is not None:
         link = matched.group(0)[6:-1]
         next_base36 = re.search("comments\/.{7}", link).group(0)[9:]  # {6} for old reddit posts. {7} for new ones
         next_base36 = next_base36.strip("/")  # if old reddit post, remove trailing "/"
     else:
         try:
-            print("### MISSING NEXT CHAPTER LINK IN " + submission.title + " -- " + base36)
+            print("### MISSING NEXT CHAPTER LINK IN " + submission["title"] + " -- " + submission["base36"])
             next_base36 = MISSING_LINKS[missing_link_count]
             print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
             missing_link_count = missing_link_count + 1
@@ -93,11 +102,7 @@ def get_submission(reddit, base36, missing_link_count):
             print("### ADD MISSING BASE36 AT THE END OF THE TABLE")
             raise ValueError("Missing substitute BASE36 at the end of the MISSING_LINKS list")
 
-    first_line_index = selftext.find('\n')
-    last_line_index = selftext.rfind('\n')
-    content = selftext[first_line_index + 2:last_line_index]
-
-    return {"title": title, "content": content, "next_base36": next_base36, "missing_link_count": missing_link_count}
+    return {"next_base36": next_base36, "missing_link_count": missing_link_count}
 
 
 def main():
@@ -117,21 +122,23 @@ def main():
 
     # MAIN SCAN LOOP
     for i in range(1, NUMBER_OF_CHAPTERS_TO_SCAN + 1):
-        submission = get_submission(reddit, submission_base36, missing_link_count)
-
-        submission_base36 = submission["next_base36"]
-        missing_link_count = submission["missing_link_count"]
+        submission = get_submission(reddit, submission_base36)
 
         chapter = create_chapter(i, submission["title"], submission["content"])
         chapters.append(chapter)
         book.add_item(chapter)
+
+        if i != NUMBER_OF_CHAPTERS_TO_SCAN:
+            pointer = get_next_submission_pointer(submission, missing_link_count)
+            submission_base36 = pointer["next_base36"]
+            missing_link_count = pointer["missing_link_count"]
 
     print("### SCAN FINISHED")
 
     print("### CREATING FILE")
     book.toc = chapters
     book.spine = ["nav"] + chapters
-    epub.write_epub(FILENAME, book, {})  # https://www.amazon.com/gp/sendtokindle
+    epub.write_epub(FILENAME, book, {})
     print("### FILE " + FILENAME + " CREATED")
 
 
