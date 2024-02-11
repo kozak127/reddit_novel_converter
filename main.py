@@ -87,22 +87,27 @@ def get_submission(reddit, base36):
 
 def get_next_submission_pointer(submission, missing_link_count):
     raw_submission = submission["raw"]
-    matched = re.search("next.*\/\)", raw_submission, re.IGNORECASE)
-    if matched is not None:
-        link = matched.group(0)[6:-1]
-        next_base36 = re.search("comments\/.{7}", link).group(0)[9:]  # {6} for old reddit posts. {7} for new ones
-        next_base36 = next_base36.strip("/")  # if old reddit post, remove trailing "/"
-    else:
-        try:
-            print("### MISSING NEXT CHAPTER LINK IN " + submission["title"] + " -- " + submission["base36"])
-            next_base36 = MISSING_LINKS[missing_link_count]
-            print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
-            missing_link_count = missing_link_count + 1
-        except IndexError:
-            print("### ADD MISSING BASE36 AT THE END OF THE TABLE")
-            raise ValueError("Missing substitute BASE36 at the end of the MISSING_LINKS list")
+    matched = re.search("\[next\]\(https:\/\/www\.reddit\.com\/r\/.{3}\/comments\/.{7}", raw_submission, re.IGNORECASE)
+    if matched is None:
+        return get_missing_link(missing_link_count, submission)
 
+    link = matched.group(0)
+    next_base36 = link[-7:]  # extract the base36 from the link. old ones have length of 6, new ones have 7
+    next_base36 = next_base36.strip("/")  # if old reddit post, remove trailing "/"
     return {"next_base36": next_base36, "missing_link_count": missing_link_count}
+
+
+def get_missing_link(missing_link_count, submission):
+    try:
+        print("### MISSING NEXT CHAPTER LINK IN " + submission["title"] + " -- " + submission["base36"])
+        next_base36 = MISSING_LINKS[missing_link_count]
+        print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
+        missing_link_count = missing_link_count + 1
+        return {"next_base36": next_base36, "missing_link_count": missing_link_count}
+    except IndexError:
+        print("### ERROR - ADD APPROPRIATE BASE36 AT THE END OF THE MISSING_LINKS TABLE")
+        print("### ERROR - CLOSING THE APPLICATION")
+        sys.exit()
 
 
 def main():
