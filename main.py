@@ -12,7 +12,7 @@ FILENAME = "test.epub"  # https://www.amazon.com/gp/sendtokindle
 
 # SCAN PROPERTIES
 STARTING_CHAPTER_BASE36 = "mizhcb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/mizhcb/first_contact_fourth_wave_chapter_461/
-NUMBER_OF_CHAPTERS_TO_SCAN = 100
+NUMBER_OF_CHAPTERS_TO_SCAN = 100  # do not use more than 999
 MISSING_LINKS = ["mpr25p", # Example values, remove before use. Used when author forgot to add "next" link. Add the BASE36 of the next chapter here. Order matters
                  "oc2mxr",
                  "ocnsg5"]
@@ -71,12 +71,12 @@ def convert_content_to_xhtml(content):
     return "".join(converted_paragraphs)
 
 
-def get_submission(reddit, base36):
+def get_submission(number, reddit, base36):
     submission = reddit.submission(base36)
 
     title = submission.title
     raw = submission.selftext
-    print(title + " -- " + base36)
+    print("{:03d}".format(number) + "/" + str(NUMBER_OF_CHAPTERS_TO_SCAN) + " -- " + title + " -- " + base36)
 
     first_line_index = raw.find('\n')
     last_line_index = raw.rfind('\n')
@@ -127,7 +127,7 @@ def main():
 
     # MAIN SCAN LOOP
     for i in range(1, NUMBER_OF_CHAPTERS_TO_SCAN + 1):
-        submission = get_submission(reddit, submission_base36)
+        submission = get_submission(i, reddit, submission_base36)
 
         chapter = create_chapter(i, submission["title"], submission["content"])
         chapters.append(chapter)
