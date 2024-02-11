@@ -101,7 +101,7 @@ def get_missing_link(missing_link_count, submission):
     try:
         print("### MISSING NEXT CHAPTER LINK IN " + submission["title"] + " -- " + submission["base36"])
         next_base36 = MISSING_LINKS[missing_link_count]
-        print("### SUBSTITUTION TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
+        print("### MISSING LINK TABLE INDEX: " + str(missing_link_count) + "; SUBSTITUTED WITH " + next_base36)
         missing_link_count = missing_link_count + 1
         return {"next_base36": next_base36, "missing_link_count": missing_link_count}
     except IndexError:
