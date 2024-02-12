@@ -4,14 +4,14 @@ import praw
 from ebooklib import epub
 
 # BOOK PROPERTIES
-TITLE = "The Human Artificial Hivemind 51-100"
+TITLE = "The Human Artificial Hivemind 1-50"
 AUTHOR = "Storms_Wrath"
 LANGUAGE = "en"
-IDENTIFIER = "test01"
-FILENAME = "The Human Artificial Hivemind 51-100.epub"  # https://www.amazon.com/gp/sendtokindle
+IDENTIFIER = "test50"
+FILENAME = "The Human Artificial Hivemind 1-50.epub"  # https://www.amazon.com/gp/sendtokindle
 
 # SCAN PROPERTIES
-STARTING_CHAPTER_BASE36 = "spmz6j"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/  -->spmz6j<--  /the_human_artificial_hivemind_part_51_alien/
+STARTING_CHAPTER_BASE36 = "rtrcwb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/  -->rtrcwb<--  /the_human_artificial_hivemind_part_1_malfunction
 NUMBER_OF_CHAPTERS_TO_SCAN = 50  # do not use more than 999
 # Example values, remove before use. Used when author forgot to add "next" link. Add the BASE36 of the next chapter here. Order matters
 MISSING_LINKS = [
