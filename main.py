@@ -4,18 +4,22 @@ import praw
 from ebooklib import epub
 
 # BOOK PROPERTIES
-TITLE = "Behold: Humanity - reddit ch 461-561"
-AUTHOR = "Ralts Bloodthorne"
+TITLE = "The Human Artificial Hivemind 51-100"
+AUTHOR = "Storms_Wrath"
 LANGUAGE = "en"
 IDENTIFIER = "test01"
-FILENAME = "test.epub"  # https://www.amazon.com/gp/sendtokindle
+FILENAME = "The Human Artificial Hivemind 51-100.epub"  # https://www.amazon.com/gp/sendtokindle
 
 # SCAN PROPERTIES
-STARTING_CHAPTER_BASE36 = "mizhcb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/mizhcb/first_contact_fourth_wave_chapter_461/
-NUMBER_OF_CHAPTERS_TO_SCAN = 100  # do not use more than 999
-MISSING_LINKS = ["mpr25p", # Example values, remove before use. Used when author forgot to add "next" link. Add the BASE36 of the next chapter here. Order matters
-                 "oc2mxr",
-                 "ocnsg5"]
+STARTING_CHAPTER_BASE36 = "spmz6j"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/  -->spmz6j<--  /the_human_artificial_hivemind_part_51_alien/
+NUMBER_OF_CHAPTERS_TO_SCAN = 50  # do not use more than 999
+# Example values, remove before use. Used when author forgot to add "next" link. Add the BASE36 of the next chapter here. Order matters
+MISSING_LINKS = [
+]
+
+# CHAPTER NAMES
+CHAPTER_CUT_OUT_PREFIX = True  # True/False
+CHAPTER_PREFIX_REGEX = "The Human Artificial Hivemind Part [0-9]*: "
 
 # APP PROPERTIES - SEE https://medium.com/geekculture/how-to-extract-reddit-posts-for-an-nlp-project-56d121b260b4
 REDDIT_USERNAME = ""
@@ -50,7 +54,8 @@ def create_epub():
     return book
 
 
-def create_chapter(number, title, content):
+def create_chapter(number, raw_title, content):
+    title = clean_title(raw_title)
     chapter = epub.EpubHtml(title=title, file_name="chapter_" + str(number) + ".xhtml", lang="en")
     heading = "<h1>" + title + "</h1>"
     content_xhtml = convert_content_to_xhtml(content)
@@ -59,6 +64,12 @@ def create_chapter(number, title, content):
             content_xhtml
     )
     return chapter
+
+
+def clean_title(raw_title):
+    if not CHAPTER_CUT_OUT_PREFIX:
+        return raw_title
+    return re.sub(CHAPTER_PREFIX_REGEX, "", raw_title)
 
 
 def convert_content_to_xhtml(content):
