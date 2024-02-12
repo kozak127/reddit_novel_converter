@@ -76,7 +76,7 @@ def get_submission(number, reddit, base36):
 
     title = submission.title
     raw = submission.selftext
-    print("{:03d}".format(number) + "/" + str(NUMBER_OF_CHAPTERS_TO_SCAN) + " -- " + title + " -- " + base36)
+    print("{:03d}".format(number) + "/" + str(NUMBER_OF_CHAPTERS_TO_SCAN) + " -- " + base36 + " -- " + title)
 
     first_line_index = raw.find('\n')
     last_line_index = raw.rfind('\n')
