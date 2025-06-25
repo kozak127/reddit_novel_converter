@@ -13,7 +13,7 @@ FILENAME = "The Human Artificial Hivemind 1-50.epub"  # https://www.amazon.com/g
 # SCAN PROPERTIES
 STARTING_CHAPTER_BASE36 = "rtrcwb"  # get that from reddit link, i.e. https://www.reddit.com/r/HFY/comments/  -->rtrcwb<--  /the_human_artificial_hivemind_part_1_malfunction
 NUMBER_OF_CHAPTERS_TO_SCAN = 50  # do not use more than 999
-# Example values, remove before use. Used when author forgot to add "next" link. Add the BASE36 of the next chapter here. Order matters
+# Example values, remove before use. Used when the author forgot to add the "next" link. Add the BASE36 of the next chapter here. Order matters
 MISSING_LINKS = [
 ]
 
@@ -99,6 +99,8 @@ def get_submission(number, reddit, base36):
 def get_next_submission_pointer(submission, missing_link_count):
     raw_submission = submission["raw"]
     matched = re.search("\[next\]\(https:\/\/www\.reddit\.com\/r\/.{3}\/comments\/.{7}", raw_submission, re.IGNORECASE)
+    if matched is None:
+        matched = re.search("\[Next \(NSFW\)\]\(https:\/\/www\.reddit\.com\/r\/.{3}\/comments\/.{7}", raw_submission, re.IGNORECASE)
     if matched is None:
         return get_missing_link(missing_link_count, submission)
 
