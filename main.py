@@ -3,6 +3,10 @@ import re
 import praw
 from ebooklib import epub
 
+########################
+# SCRIPT CONFIGURATION #
+########################
+
 # BOOK PROPERTIES
 TITLE = "The Human Artificial Hivemind 1-50"
 AUTHOR = "Storms_Wrath"
