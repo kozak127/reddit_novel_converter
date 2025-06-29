@@ -106,6 +106,8 @@ def get_next_submission_pointer(submission, missing_link_count):
     if matched is None:
         matched = re.search("\[Next \(NSFW\)\]\(https:\/\/www\.reddit\.com\/r\/.{3}\/comments\/.{7}", raw_submission, re.IGNORECASE)
     if matched is None:
+        matched = re.search("\[Next Chapter\>\>\]\(https:\/\/www\.reddit\.com\/r\/.{3}\/comments\/.{7}", raw_submission, re.IGNORECASE)
+    if matched is None:
         return get_missing_link(missing_link_count, submission)
 
     link = matched.group(0)
